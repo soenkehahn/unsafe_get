@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 #[macro_export]
 macro_rules! get {
     ($value:expr, $constructor:path, $field:ident) => {{
@@ -35,5 +37,17 @@ mod get {
     #[test]
     fn works_for_different_types() {
         assert_eq!(get!(Enum::Bar { bar: true }, Enum::Bar, bar), true);
+    }
+
+    #[test]
+    fn does_not_emit_warnings_on_enums_with_one_constructor() {
+        #[derive(Debug)]
+        enum Single {
+            Single { field: i32 },
+        };
+        assert_eq!(
+            get!(Single::Single { field: 42 }, Single::Single, field),
+            42
+        );
     }
 }
