@@ -4,19 +4,31 @@ macro_rules! get {
         if let $constructor { $field, .. } = $value {
             $field
         } else {
-            0
+            panic!(
+                "get!: expected enum constructor: {}, got {:?}",
+                stringify!($constructor),
+                $value
+            )
         }
     }};
 }
 
 #[cfg(test)]
 mod get {
+    #[derive(Debug)]
+    enum Enum {
+        Foo { foo: i32 },
+        Bar,
+    }
+
     #[test]
     fn returns_enum_fields() {
-        enum Enum {
-            Foo { foo: i32 },
-            Bar,
-        };
         assert_eq!(get!(Enum::Foo { foo: 42 }, Enum::Foo, foo), 42);
+    }
+
+    #[test]
+    #[should_panic(expected = "get!: expected enum constructor: Enum::Foo, got Bar")]
+    fn panics_in_case_of_getting_passed_in_the_wrong_enum_constructor() {
+        assert_eq!(get!(Enum::Bar, Enum::Foo, foo), 42);
     }
 }
