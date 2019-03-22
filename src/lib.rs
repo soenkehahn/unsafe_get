@@ -18,7 +18,7 @@ mod get {
     #[derive(Debug)]
     enum Enum {
         Foo { foo: i32 },
-        Bar,
+        Bar { bar: bool },
     }
 
     #[test]
@@ -29,6 +29,11 @@ mod get {
     #[test]
     #[should_panic(expected = "get!: expected enum constructor: Enum::Foo, got Bar")]
     fn panics_in_case_of_getting_passed_in_the_wrong_enum_constructor() {
-        assert_eq!(get!(Enum::Bar, Enum::Foo, foo), 42);
+        assert_eq!(get!(Enum::Bar { bar: true }, Enum::Foo, foo), 42);
+    }
+
+    #[test]
+    fn works_for_different_types() {
+        assert_eq!(get!(Enum::Bar { bar: true }, Enum::Bar, bar), true);
     }
 }
