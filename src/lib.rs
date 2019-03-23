@@ -1,39 +1,69 @@
-#[macro_export]
-macro_rules! get {
-    ($value:expr, $constructor:path, $field:ident) => {{
-        if let $constructor { $field, .. } = $value {
-            $field
+extern crate proc_macro;
+
+use core::iter::FromIterator;
+use core::str::FromStr;
+use proc_macro::*;
+
+fn split_by(separators: Vec<char>, tokens: TokenStream) -> Vec<Vec<TokenTree>> {
+    let mut result = vec![];
+    let mut acc = vec![];
+    for token in tokens {
+        if let TokenTree::Punct(punct) = token {
+            if separators.contains(&punct.as_char()) {
+                result.push(acc);
+                acc = vec![];
+            } else {
+                acc.push(TokenTree::Punct(punct))
+            }
         } else {
-            panic!(
-                "get!: expected enum constructor: {}, got {:?}",
-                stringify!($constructor),
-                $value
-            )
+            acc.push(token)
         }
-    }};
+    }
+    if !acc.is_empty() {
+        result.push(acc);
+    }
+    result
 }
 
-#[cfg(test)]
-mod get {
-    #[derive(Debug)]
-    enum Enum {
-        Foo { foo: i32 },
-        Bar { bar: bool },
-    }
+struct Arguments {
+    expr: String,
+    constructor: String,
+    member: String,
+}
 
-    #[test]
-    fn returns_enum_fields() {
-        assert_eq!(get!(Enum::Foo { foo: 42 }, Enum::Foo, foo), 42);
+impl Arguments {
+    fn new(input: TokenStream) -> Arguments {
+        fn next_argument(arguments: &mut dyn Iterator<Item = Vec<TokenTree>>) -> String {
+            TokenStream::from_iter(arguments.next().unwrap()).to_string()
+        }
+        let mut arguments = split_by(vec![',', '.'], input).into_iter();
+        Arguments {
+            expr: next_argument(&mut arguments),
+            constructor: next_argument(&mut arguments),
+            member: next_argument(&mut arguments),
+        }
     }
+}
 
-    #[test]
-    #[should_panic(expected = "get!: expected enum constructor: Enum::Foo, got Bar")]
-    fn panics_in_case_of_getting_passed_in_the_wrong_enum_constructor() {
-        assert_eq!(get!(Enum::Bar { bar: true }, Enum::Foo, foo), 42);
-    }
+#[proc_macro]
+pub fn get(input: TokenStream) -> TokenStream {
+    let arguments = Arguments::new(input);
+    TokenStream::from_str(&format!(
+        "
+            match ({}) {{
+                {} {{ {}, .. }} => {},
+                x => panic!(\"get!: expected enum constructor: {}, got {{:?}}\", x),
+            }}
+        ",
+        arguments.expr,
+        arguments.constructor,
+        arguments.member,
+        arguments.member,
+        remove_spaces(&arguments.constructor),
+    ))
+    .unwrap()
+}
 
-    #[test]
-    fn works_for_different_types() {
-        assert_eq!(get!(Enum::Bar { bar: true }, Enum::Bar, bar), true);
-    }
+fn remove_spaces(s: &str) -> String {
+    s.chars().filter(|char| *char != ' ').collect()
 }
