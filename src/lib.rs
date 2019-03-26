@@ -128,3 +128,11 @@ macro_rules! unwrap_enum_field {
         }
     }};
 }
+
+/// Alias for `unwrap_enum_field!`. In case you dislike pressing keys on your keyboard.
+#[macro_export]
+macro_rules! gimme {
+    ($value:expr, $constructor:path, $field:ident) => {
+        unwrap_enum_field!($value, $constructor, $field)
+    };
+}

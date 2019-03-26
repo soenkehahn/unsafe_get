@@ -1,4 +1,4 @@
-use unwrap_enum_field::unwrap_enum_field;
+use unwrap_enum_field::{gimme, unwrap_enum_field};
 
 #[derive(Debug)]
 enum Enum {
@@ -31,4 +31,9 @@ fn works_for_different_types() {
         unwrap_enum_field!(Enum::Bar { bar: true }, Enum::Bar, bar),
         true
     );
+}
+
+#[test]
+fn gimme_works_like_unwrap_enum_field() {
+    assert_eq!(gimme!(Enum::Foo { foo: 42 }, Enum::Foo, foo), 42);
 }
