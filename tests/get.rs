@@ -1,4 +1,4 @@
-use unsafe_get::get;
+use unwrap_enum_field::get;
 
 #[derive(Debug)]
 enum Enum {

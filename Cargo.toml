@@ -1,5 +1,5 @@
 [package]
-name = "unsafe_get"
+name = "unwrap_enum_field"
 version = "0.1.0"
 authors = ["Sönke Hahn <soenkehahn@gmail.com>"]
 edition = "2018"

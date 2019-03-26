@@ -76,7 +76,7 @@
 //! #   ExampleEnum::Foo { a: 1, b: 2 }
 //! # }
 //! #
-//! use unsafe_get::get;
+//! use unwrap_enum_field::get;
 //!
 //! fn computes_something_returns_correct_b() {
 //!   assert_eq!(get!(computes_something(), ExampleEnum::Foo, b), 2);
@@ -86,7 +86,7 @@
 /// The `get!` macro provides a non-total way to access enum fields:
 ///
 /// ```
-/// use unsafe_get::get;
+/// use unwrap_enum_field::get;
 ///
 /// #[derive(Debug)]
 /// enum ExampleEnum {
@@ -103,7 +103,7 @@
 /// will panic.
 ///
 /// ```should_panic
-/// use unsafe_get::get;
+/// use unwrap_enum_field::get;
 ///
 /// #[derive(Debug)]
 /// enum ExampleEnum {
