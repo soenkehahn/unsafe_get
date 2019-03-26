@@ -6,7 +6,7 @@
 //! Pattern matching forces us to handle every enum case, and through that
 //! eliminates a whole category of runtime bugs. This crate provides an escape
 //! hatch to that, and shouldn't be used in normal circumstances. There's one
-//! situation where `get!` might be useful though: tests.
+//! situation where `unwrap_enum_field!` might be useful though: tests.
 //!
 //! Here's an example of an enum and a function that returns a value of that enum:
 //! ```
@@ -63,7 +63,7 @@
 //!   }
 //! }
 //! ```
-//! That only tests what you want to test, but is also a bit ugly. With `get!`
+//! That only tests what you want to test, but is also a bit ugly. With `unwrap_enum_field!`
 //! you can write:
 //! ```
 //! # #[derive(Debug, PartialEq)]
@@ -76,17 +76,17 @@
 //! #   ExampleEnum::Foo { a: 1, b: 2 }
 //! # }
 //! #
-//! use unwrap_enum_field::get;
+//! use unwrap_enum_field::unwrap_enum_field;
 //!
 //! fn computes_something_returns_correct_b() {
-//!   assert_eq!(get!(computes_something(), ExampleEnum::Foo, b), 2);
+//!   assert_eq!(unwrap_enum_field!(computes_something(), ExampleEnum::Foo, b), 2);
 //! }
 //! ```
 
-/// The `get!` macro provides a non-total way to access enum fields:
+/// The `unwrap_enum_field!` macro provides a non-total way to access enum fields:
 ///
 /// ```
-/// use unwrap_enum_field::get;
+/// use unwrap_enum_field::unwrap_enum_field;
 ///
 /// #[derive(Debug)]
 /// enum ExampleEnum {
@@ -95,15 +95,15 @@
 /// }
 ///
 /// let value = ExampleEnum::Foo { field: 42 };
-/// assert_eq!(get!(value, ExampleEnum::Foo, field), 42);
+/// assert_eq!(unwrap_enum_field!(value, ExampleEnum::Foo, field), 42);
 /// ```
 ///
-/// If the first argument to `get!` is constructed with a different
-/// constructor than the one passed in as the second argument, `get!`
+/// If the first argument to `unwrap_enum_field!` is constructed with a different
+/// constructor than the one passed in as the second argument, `unwrap_enum_field!`
 /// will panic.
 ///
 /// ```should_panic
-/// use unwrap_enum_field::get;
+/// use unwrap_enum_field::unwrap_enum_field;
 ///
 /// #[derive(Debug)]
 /// enum ExampleEnum {
@@ -112,16 +112,16 @@
 /// }
 ///
 /// let value = ExampleEnum::Foo { field: 42 };
-/// let other_field = get!(value, ExampleEnum::Bar, other_field); // panics
+/// let other_field = unwrap_enum_field!(value, ExampleEnum::Bar, other_field); // panics
 /// ```
 #[macro_export]
-macro_rules! get {
+macro_rules! unwrap_enum_field {
     ($value:expr, $constructor:path, $field:ident) => {{
         if let $constructor { $field, .. } = $value {
             $field
         } else {
             panic!(
-                "get!: expected enum constructor: {}, got {:?}",
+                "unwrap_enum_field!: expected enum constructor: {}, got {:?}",
                 stringify!($constructor),
                 $value
             )
